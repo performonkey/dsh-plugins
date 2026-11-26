@@ -1,0 +1,14 @@
+# Cluster Worker overlay patch.
+# Applied on top of dsh-base: runs local execution engine (Agent loop, tools, terminal, fs).
+# Disables Web server & static frontend (does not bind HTTP port).
+# Actively establishes reverse WebSocket tunnel to Master and dispatches incoming RPCs.
+
+- insert:
+    - id: cluster-worker
+      name: '@deepseek-ai/dsh-cluster-worker'
+      config:
+        masterUrl: !!js process.env.DSH_CLUSTER_MASTER_URL ?? 'ws://127.0.0.1:8080/api/worker/connect'
+        authToken: !!js process.env.DSH_CLUSTER_AUTH_TOKEN ?? 'default-cluster-token'
+        workerId: !!js process.env.DSH_CLUSTER_WORKER_ID ?? undefined
+        name: !!js process.env.DSH_CLUSTER_WORKER_NAME ?? undefined
+        autoReconnect: true

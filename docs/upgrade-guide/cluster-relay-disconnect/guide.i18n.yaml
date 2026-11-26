@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.2-alpha.2/cluster-relay-disconnect/guide.md
+/:
+  en: d124f63785a05a5b
+  zh: 50509d874dc7b2c6
+/cluster-relay-disconnect-responses:
+  en: f1efa31f3f222e15
+  zh: bb84eb6aadc04023
+/cluster-relay-disconnect-responses/change:
+  en: 1b3cfb2e42553340
+  zh: 99389d7160d17d7f
+/cluster-relay-disconnect-responses/migration:
+  en: 1195e8bb6f189401
+  zh: fc730ffcf22e1eff

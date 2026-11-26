@@ -1,0 +1,363 @@
+diff --git a/packages/client/ui-sidebar-terminal/src/client/locales.ts b/packages/client/ui-sidebar-terminal/src/client/locales.ts
+index f092ab9930..0b48541afa 100644
+--- a/packages/client/ui-sidebar-terminal/src/client/locales.ts
++++ b/packages/client/ui-sidebar-terminal/src/client/locales.ts
+@@ -27,6 +27,9 @@ export const zh = {
+   'badge.sandbox': '沙箱',
+   'badge.readOnlyHint': '命令在 Agent 的只读沙箱里运行，包括你在这里输入的命令。',
+   'badge.workspaceWriteHint': '命令在 Agent 的工作区沙箱里运行，包括你在这里输入的命令。',
++  screenKeyboard: '快捷按键', keyboardEscape: '退出键', keyboardTab: '制表键', keyboardArrow: '方向键：{direction}',
++  keyboardDirectionUp: '上', keyboardDirectionDown: '下', keyboardDirectionLeft: '左', keyboardDirectionRight: '右',
++  keyboardCtrl: 'Ctrl 修饰键', keyboardAlt: 'Alt 修饰键', keyboardBackspace: '退格键', keyboardPaste: '粘贴',
+ } satisfies Record<string, string>
+ 
+ /** English terminal copy. */
+@@ -49,6 +52,9 @@ export const en = {
+   'badge.sandbox': 'Sandbox',
+   'badge.readOnlyHint': "Commands run in the agent's read-only sandbox, including commands you type here.",
+   'badge.workspaceWriteHint': "Commands run in the agent's workspace sandbox, including commands you type here.",
++  screenKeyboard: 'Quick keys', keyboardEscape: 'Escape', keyboardTab: 'Tab', keyboardArrow: 'Arrow key: {direction}',
++  keyboardDirectionUp: 'Up', keyboardDirectionDown: 'Down', keyboardDirectionLeft: 'Left', keyboardDirectionRight: 'Right',
++  keyboardCtrl: 'Ctrl modifier', keyboardAlt: 'Alt modifier', keyboardBackspace: 'Backspace', keyboardPaste: 'Paste',
+ } satisfies Record<keyof typeof zh, string>
+ 
+ /** Japanese copy, checked against the English keys. */
+@@ -86,6 +92,18 @@ export const ja = {
+   'badge.sandbox': 'サンドボックス',
+   'badge.readOnlyHint': 'コマンドはエージェントの読み取り専用サンドボックスで実行されます（ここで入力したコマンドも含みます）。',
+   'badge.workspaceWriteHint': 'コマンドはエージェントのワークスペースサンドボックスで実行されます（ここで入力したコマンドも含みます）。',
++  'screenKeyboard': 'クイックキー',
++  'keyboardEscape': 'エスケープ',
++  'keyboardTab': 'タブ',
++  'keyboardArrow': '矢印キー：{direction}',
++  'keyboardDirectionUp': '上',
++  'keyboardDirectionDown': '下',
++  'keyboardDirectionLeft': '左',
++  'keyboardDirectionRight': '右',
++  'keyboardCtrl': 'Ctrl 修飾キー',
++  'keyboardAlt': 'Alt 修飾キー',
++  'keyboardBackspace': 'バックスペース',
++  'keyboardPaste': '貼り付け',
+ } satisfies Record<keyof typeof en, string>
+ 
+ /** Spanish dictionary, checked against the English keys. */
+@@ -108,6 +126,9 @@ export const es = {
+   'badge.sandbox': 'Sandbox',
+   'badge.readOnlyHint': 'Los comandos se ejecutan en el sandbox de solo lectura del agente, incluidos los que escriba aquí.',
+   'badge.workspaceWriteHint': 'Los comandos se ejecutan en el sandbox del espacio de trabajo del agente, incluidos los que escriba aquí.',
++  screenKeyboard: 'Teclas rápidas', keyboardEscape: 'Escape', keyboardTab: 'Tabulador', keyboardArrow: 'Tecla de flecha: {direction}',
++  keyboardDirectionUp: 'Arriba', keyboardDirectionDown: 'Abajo', keyboardDirectionLeft: 'Izquierda', keyboardDirectionRight: 'Derecha',
++  keyboardCtrl: 'Modificador Ctrl', keyboardAlt: 'Modificador Alt', keyboardBackspace: 'Retroceso', keyboardPaste: 'Pegar',
+ } satisfies Record<keyof typeof en, string>
+ 
+ /** French dictionary, checked against the English keys. */
+@@ -130,6 +151,9 @@ export const fr = {
+   'badge.sandbox': 'Sandbox',
+   'badge.readOnlyHint': 'Les commandes s’exécutent dans le sandbox en lecture seule de l’agent, y compris celles que vous saisissez ici.',
+   'badge.workspaceWriteHint': 'Les commandes s’exécutent dans le sandbox de l’espace de travail de l’agent, y compris celles que vous saisissez ici.',
++  screenKeyboard: 'Touches rapides', keyboardEscape: 'Échap', keyboardTab: 'Tabulation', keyboardArrow: 'Touche de direction : {direction}',
++  keyboardDirectionUp: 'Haut', keyboardDirectionDown: 'Bas', keyboardDirectionLeft: 'Gauche', keyboardDirectionRight: 'Droite',
++  keyboardCtrl: 'Modificateur Ctrl', keyboardAlt: 'Modificateur Alt', keyboardBackspace: 'Retour arrière', keyboardPaste: 'Coller',
+ } satisfies Record<keyof typeof en, string>
+ 
+ /** German dictionary, checked against the English keys. */
+@@ -152,6 +176,9 @@ export const de = {
+   'badge.sandbox': 'Sandbox',
+   'badge.readOnlyHint': 'Befehle laufen in der schreibgeschützten Sandbox des Agenten, auch Befehle, die Sie hier eingeben.',
+   'badge.workspaceWriteHint': 'Befehle laufen in der Arbeitsbereich-Sandbox des Agenten, auch Befehle, die Sie hier eingeben.',
++  screenKeyboard: 'Schnelltasten', keyboardEscape: 'Escape', keyboardTab: 'Tabulator', keyboardArrow: 'Pfeiltaste: {direction}',
++  keyboardDirectionUp: 'Hoch', keyboardDirectionDown: 'Runter', keyboardDirectionLeft: 'Links', keyboardDirectionRight: 'Rechts',
++  keyboardCtrl: 'Ctrl-Modifikator', keyboardAlt: 'Alt-Modifikator', keyboardBackspace: 'Rücktaste', keyboardPaste: 'Einfügen',
+ } satisfies Record<keyof typeof en, string>
+ 
+ /** Russian dictionary, checked against the English keys. */
+@@ -174,6 +201,9 @@ export const ru = {
+   'badge.sandbox': 'Песочница',
+   'badge.readOnlyHint': 'Команды выполняются в песочнице агента только для чтения, включая команды, которые вы вводите здесь.',
+   'badge.workspaceWriteHint': 'Команды выполняются в песочнице рабочей области агента, включая команды, которые вы вводите здесь.',
++  screenKeyboard: 'Быстрые клавиши', keyboardEscape: 'Escape', keyboardTab: 'Tab', keyboardArrow: 'Клавиша со стрелкой: {direction}',
++  keyboardDirectionUp: 'Вверх', keyboardDirectionDown: 'Вниз', keyboardDirectionLeft: 'Влево', keyboardDirectionRight: 'Вправо',
++  keyboardCtrl: 'Модификатор Ctrl', keyboardAlt: 'Модификатор Alt', keyboardBackspace: 'Backspace', keyboardPaste: 'Вставить',
+ } satisfies Record<keyof typeof en, string>
+ 
+ /** Portuguese dictionary, checked against the English keys. */
+@@ -196,4 +226,7 @@ export const pt = {
+   'badge.sandbox': 'Sandbox',
+   'badge.readOnlyHint': 'Os comandos são executados no sandbox somente leitura do agente, incluindo os que você digitar aqui.',
+   'badge.workspaceWriteHint': 'Os comandos são executados no sandbox do espaço de trabalho do agente, incluindo os que você digitar aqui.',
++  screenKeyboard: 'Teclas rápidas', keyboardEscape: 'Escape', keyboardTab: 'Tabulação', keyboardArrow: 'Tecla de seta: {direction}',
++  keyboardDirectionUp: 'Cima', keyboardDirectionDown: 'Baixo', keyboardDirectionLeft: 'Esquerda', keyboardDirectionRight: 'Direita',
++  keyboardCtrl: 'Modificador Ctrl', keyboardAlt: 'Modificador Alt', keyboardBackspace: 'Backspace', keyboardPaste: 'Colar',
+ } satisfies Record<keyof typeof en, string>
+diff --git a/packages/client/ui-sidebar-terminal/src/client/terminal.tsx b/packages/client/ui-sidebar-terminal/src/client/terminal.tsx
+index 5edefb35fd..9648adf4e9 100644
+--- a/packages/client/ui-sidebar-terminal/src/client/terminal.tsx
++++ b/packages/client/ui-sidebar-terminal/src/client/terminal.tsx
+@@ -2,7 +2,7 @@
+ import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
+ import { Terminal } from '@xterm/xterm'
+ import { FitAddon } from '@xterm/addon-fit'
+-import { Button, IconPlusOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
++import { Button, IconPlusOutlineRegular, isMobileDevice } from '@deepseek-ai/dsh-client-ui-primitives'
+ import type { TerminalViewState, TerminalView } from '@deepseek-ai/dsh-api-terminal-controller/client'
+ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+ import type { ThemeSnapshot } from '@deepseek-ai/dsh-client-ui-theme/client'
+@@ -12,6 +12,7 @@ import '@xterm/xterm/css/xterm.css'
+ import css from './terminal.module.css'
+ import { TerminalTheme } from './terminal-theme.ts'
+ import { observeTerminalCursor } from './terminal-cursor.ts'
++import { MobileKeyStrip, type KeyboardTranslate } from './mobile-keyboard.tsx'
+ 
+ /** Standard sidebar owner share plus terminal model and localized copy. */
+ export type TerminalBodyProps = PropsRuntime<'sidebar.right.pane.tab'> & PropsLocale<'sidebarTerminal'> & InjectFace<TerminalBodyInjected>
+@@ -63,7 +64,7 @@ export function TerminalBody({ useTabInfo, useTerminal, useTheme, view, t }: Ter
+           : <Button variant="outline" size="sm" onClick={() => { model.connect() }}>{t('reconnect')}</Button>)}
+         {ended && newTerminal}
+       </div>}
+-      {state.info !== undefined && <TerminalScreen state={state} model={model} visible={tab.visible} label={t('title')} theme={theme} />}
++      {state.info !== undefined && <TerminalScreen state={state} model={model} visible={tab.visible} label={t('title')} theme={theme} t={t} />}
+       {error !== undefined && <p className={css.error} role="alert">{t('failed', { message: error })}</p>}
+     </section>
+   )
+@@ -80,18 +81,20 @@ const INPUT_GESTURES = ['keydown', 'beforeinput', 'paste', 'compositionend', 'dr
+ const FOCUS_REPORTS = new Set(['\x1b[I', '\x1b[O'])
+ 
+ /* oxlint-disable typescript/no-non-null-assertion -- React sets the DOM ref, then these effects initialize and use the emulator. */
+-function TerminalScreen({ state, model, visible, label, theme }: {
++function TerminalScreen({ state, model, visible, label, theme, t }: {
+   state: TerminalViewState
+   model: TerminalView
+   visible: boolean
+   label: string
+   theme: ThemeSnapshot
++  t: KeyboardTranslate
+ }): ReactNode {
+   const element = useRef<HTMLDivElement>(null)
+   const terminal = useRef<Terminal>()
+   const fit = useRef<FitAddon>()
+   const colors = useRef<TerminalTheme>()
+   const lastRevision = useRef(0)
++  const mobile = isMobileDevice()
+   const fontFamily = terminalFontFamily(theme.fontFamilies.terminal)
+   const fontSize = theme.fontSizes.terminal
+   const current = useRef({ state, visible, fontFamily, fontSize })
+@@ -176,8 +179,38 @@ function TerminalScreen({ state, model, visible, label, theme }: {
+   useEffect(() => {
+     terminal.current!.textarea?.setAttribute('aria-label', label)
+   }, [label])
+-  useEffect(() => { if (visible && state.writable) terminal.current!.focus() }, [visible, state.writable])
+-  return <div className={css.screen} ref={element} />
++  // On mobile the soft keyboard may only rise from the user's own tap, so focus is never automatic there.
++  useEffect(() => { if (!mobile && visible && state.writable) terminal.current!.focus() }, [mobile, visible, state.writable])
++  // xterm only scrolls on output, so a rising soft keyboard buries the cursor row: scroll it back into view above the strip.
++  useEffect(() => {
++    if (!mobile) return
++    const xterm = terminal.current!
++    const reveal = (covered: number): void => {
++      const cursor = xterm.buffer.active.cursorY + xterm.buffer.active.baseY
++      const gap = covered === 0 ? 0 : Math.min(2, Math.max(0, xterm.rows - 1 - xterm.buffer.active.cursorY))
++      xterm.scrollToLine(Math.max(0, cursor + 1 + gap - xterm.rows))
++    }
++    // jsdom leaves visualViewport undefined despite the non-nullable DOM type.
++    const visual = window.visualViewport as VisualViewport | undefined | null
++    if (visual === undefined || visual === null) return
++    const measure = (): void => {
++      reveal(Math.max(window.innerHeight - visual.height, visual.offsetTop))
++    }
++    visual.addEventListener('resize', measure)
++    visual.addEventListener('scroll', measure)
++    return () => {
++      visual.removeEventListener('resize', measure)
++      visual.removeEventListener('scroll', measure)
++    }
++  }, [mobile])
++  const writeKey = (data: string): void => { model.write(data) }
++  const pasteClipboard = (): void => {
++    void navigator.clipboard.readText().then((text) => { model.write(text) }, () => undefined)
++  }
++  return <>
++    <div className={css.screen} ref={element} />
++    {mobile && <MobileKeyStrip onKey={writeKey} onPaste={pasteClipboard} t={t} />}
++  </>
+ }
+ /* oxlint-enable typescript/no-non-null-assertion */
+ 
+diff --git a/packages/client/ui-sidebar-terminal/tests/terminal-body.client.spec.tsx b/packages/client/ui-sidebar-terminal/tests/terminal-body.client.spec.tsx
+index 74607e4a84..be55ca1231 100644
+--- a/packages/client/ui-sidebar-terminal/tests/terminal-body.client.spec.tsx
++++ b/packages/client/ui-sidebar-terminal/tests/terminal-body.client.spec.tsx
+@@ -1,6 +1,6 @@
+ // @vitest-environment jsdom
+ /** Terminal startup, title editing and xterm's screen lifetime. */
+-import { afterEach, beforeEach, expect, it, vi } from 'vitest'
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+ import { cleanup, fireEvent, render } from '@testing-library/react'
+ import type { ReactNode } from 'react'
+ import type { ITheme } from '@xterm/xterm'
+@@ -18,6 +18,7 @@ const fake = vi.hoisted(() => ({
+ }))
+ class FakeTerminal {
+   options: { disableStdin?: boolean; theme?: ITheme; fontFamily?: string; fontSize?: number }
++  rows = 40
+   textarea: HTMLTextAreaElement | undefined = document.createElement('textarea')
+   input: ((data: string) => void) | undefined
+   readonly disposeInput = vi.fn()
+@@ -30,6 +31,8 @@ class FakeTerminal {
+   })
+   readonly resize = vi.fn()
+   readonly reset = vi.fn()
++  readonly scrollToLine = vi.fn()
++  readonly buffer = { active: { baseY: 0, cursorY: 39 } }
+   readonly focus = vi.fn()
+   readonly dispose = vi.fn()
+   readonly write = vi.fn((_data: string, callback: () => void) => { callback() })
+@@ -40,6 +43,11 @@ class FakeTerminal {
+ }
+ vi.mock('@xterm/xterm', () => ({ Terminal: vi.fn(function (options: object) { return new FakeTerminal(options) }) }))
+ vi.mock('@xterm/addon-fit', () => ({ FitAddon: class { proposeDimensions() { return fake.dimensions } } }))
++const mobile = vi.hoisted(() => ({ value: false }))
++vi.mock('@deepseek-ai/dsh-client-ui-primitives', async importOriginal => ({
++  ...(await importOriginal<typeof import('@deepseek-ai/dsh-client-ui-primitives')>()),
++  isMobileDevice: () => mobile.value,
++}))
+ 
+ let measure: (() => void) | undefined
+ const disconnect = vi.fn()
+@@ -48,6 +56,7 @@ let boxHeight = 600
+ beforeEach(() => {
+   fake.terminals.length = 0
+   fake.dimensions = { cols: 120, rows: 40 }
++  mobile.value = false
+   boxWidth = 800
+   boxHeight = 600
+   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => boxWidth)
+@@ -507,3 +516,129 @@ it('offers a new terminal after process exit while preserving its final output f
+   fireEvent.click(h.view.getByRole('button', { name: en.new }))
+   expect(h.openTab).toHaveBeenCalledExactlyOnceWith('terminal', { replaceTab: true })
+ })
++
++describe('phone input', () => {
++  const writable = { ...idle, info, phase: 'connected' as const, writable: true }
++  it('floats the strip with Tab, Ctrl, Escape, Backspace, Paste and arrows without stealing focus', () => {
++    mobile.value = true
++    const h = mount(writable)
++    const terminal = fake.terminals[0]!
++    expect(terminal.focus).not.toHaveBeenCalled()
++    const strip = h.view.getByRole('group', { name: en.screenKeyboard })
++    expect(strip.style.bottom).toBe('0px')
++    for (const name of [en.keyboardTab, en.keyboardCtrl, en.keyboardEscape, en.keyboardBackspace, en.keyboardPaste]) {
++      expect(h.view.getByRole('button', { name })).toBeDefined()
++    }
++    for (const direction of [en.keyboardDirectionUp, en.keyboardDirectionDown, en.keyboardDirectionLeft, en.keyboardDirectionRight]) {
++      expect(h.view.getByRole('button', { name: en.keyboardArrow.replace('{direction}', direction) })).toBeDefined()
++    }
++    fireEvent.click(h.view.getByRole('button', { name: en.keyboardTab }))
++    fireEvent.click(h.view.getByRole('button', { name: en.keyboardArrow.replace('{direction}', en.keyboardDirectionUp) }))
++    fireEvent.click(h.view.getByRole('button', { name: en.keyboardEscape }))
++    fireEvent.click(h.view.getByRole('button', { name: en.keyboardBackspace }))
++    expect(h.model.write).toHaveBeenNthCalledWith(1, '\t')
++    expect(h.model.write).toHaveBeenNthCalledWith(2, '\x1b[A')
++    expect(h.model.write).toHaveBeenNthCalledWith(3, '\x1b')
++    expect(h.model.write).toHaveBeenNthCalledWith(4, '\x7f')
++  })
++
++  it('keeps the system keyboard open by cancelling mousedown on every strip key', () => {
++    mobile.value = true
++    const h = mount(writable)
++    const strip = h.view.getByRole('group', { name: en.screenKeyboard })
++    for (const button of Array.from(strip.querySelectorAll('button'))) {
++      expect(fireEvent.mouseDown(button)).toBe(false)
++    }
++  })
++
++  it('scrolls the cursor row into view above the strip when the keyboard covers the viewport', () => {
++    mobile.value = true
++    // Mirrors the component's reveal math: the bottom visible line must reach the cursor row plus a two-row gap.
++    const reveal = (baseY: number, cursorY: number, covered: number): number => {
++      const cursor = baseY + cursorY
++      const gap = covered === 0 ? 0 : Math.min(2, Math.max(0, 40 - 1 - cursorY))
++      return Math.max(0, cursor + 1 + gap - 40)
++    }
++    expect(reveal(10, 37, 320)).toBe(10)
++    expect(reveal(10, 37, 0)).toBe(8)
++    expect(reveal(0, 2, 320)).toBe(0)
++
++    const original = window.visualViewport
++    const handlers: EventListener[] = []
++    const viewport = {
++      height: 768,
++      offsetTop: 0,
++      addEventListener: (_type: string, handler: EventListener) => { handlers.push(handler) },
++      removeEventListener: (_type: string, handler: EventListener) => {
++        const index = handlers.indexOf(handler)
++        if (index >= 0) handlers.splice(index, 1)
++      },
++    }
++    Object.defineProperty(window, 'visualViewport', { value: viewport, configurable: true })
++    try {
++      mount(writable)
++      const terminal = fake.terminals[0]!
++      terminal.buffer.active = { baseY: 10, cursorY: 37 }
++      // The keyboard covers 320px: the cursor row moves above the strip instead of hiding behind it.
++      viewport.height = 448
++      viewport.offsetTop = 320
++      for (const handler of [...handlers]) handler(new Event('resize'))
++      expect(terminal.scrollToLine).toHaveBeenLastCalledWith(10)
++      // The keyboard hides again: the screen returns to its very bottom.
++      viewport.height = 768
++      viewport.offsetTop = 0
++      for (const handler of [...handlers]) handler(new Event('resize'))
++      expect(terminal.scrollToLine).toHaveBeenLastCalledWith(8)
++      // iOS keeps the layout viewport full height and reports the cover as an offset instead.
++      viewport.offsetTop = 240
++      for (const handler of [...handlers]) handler(new Event('scroll'))
++      expect(terminal.scrollToLine).toHaveBeenLastCalledWith(10)
++      // A cursor near the top of a scrolled-back buffer never scrolls above the first line.
++      terminal.buffer.active = { baseY: 0, cursorY: 2 }
++      for (const handler of [...handlers]) handler(new Event('resize'))
++      expect(terminal.scrollToLine).toHaveBeenLastCalledWith(0)
++      cleanup()
++      expect(handlers).toHaveLength(0)
++    } finally {
++      Object.defineProperty(window, 'visualViewport', { value: original, configurable: true })
++    }
++  })
++
++  it('writes clipboard text when the strip pastes', async () => {
++    mobile.value = true
++    const text = vi.fn().mockResolvedValue('echo hi')
++    vi.stubGlobal('navigator', Object.assign(Object.create(Object.getPrototypeOf(navigator) as object), navigator, { clipboard: { readText: text } }))
++    const h = mount(writable)
++    fireEvent.click(h.view.getByRole('button', { name: en.keyboardPaste }))
++    await vi.waitFor(() => { expect(h.model.write).toHaveBeenCalledWith('echo hi') })
++  })
++
++  it('ignores a denied clipboard read without writing anything', async () => {
++    mobile.value = true
++    const text = vi.fn().mockRejectedValue(new Error('permission denied'))
++    vi.stubGlobal('navigator', Object.assign(Object.create(Object.getPrototypeOf(navigator) as object), navigator, { clipboard: { readText: text } }))
++    const h = mount(writable)
++    fireEvent.click(h.view.getByRole('button', { name: en.keyboardPaste }))
++    await expect(text()).rejects.toThrow('permission denied')
++    await vi.waitFor(() => { expect(h.model.write).not.toHaveBeenCalled() })
++  })
++
++  it('skips the cursor reveal when the browser exposes no visual viewport', () => {
++    mobile.value = true
++    const original = window.visualViewport
++    Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true })
++    try {
++      const h = mount(writable)
++      expect(fake.terminals[0]!.scrollToLine).not.toHaveBeenCalled()
++      expect(h.view.getByRole('group', { name: en.screenKeyboard }).textContent).toBe('')
++    } finally {
++      Object.defineProperty(window, 'visualViewport', { value: original, configurable: true })
++    }
++  })
++
++  it('keeps the desktop screen without a key bar, focus-free of the mobile branch', () => {
++    const h = mount(writable)
++    expect(fake.terminals[0]!.focus).toHaveBeenCalledOnce()
++    expect(h.view.queryByRole('group', { name: en.screenKeyboard })).toBeNull()
++  })
++})

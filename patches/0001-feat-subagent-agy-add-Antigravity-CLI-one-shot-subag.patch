@@ -1,0 +1,860 @@
+From c1da8a74e75c1b78c92f756eccc59e735c45836d Mon Sep 17 00:00:00 2001
+From: p10y <p@reph.xyz>
+Date: Sat, 31 Oct 2026 21:01:10 +0800
+Subject: [PATCH] feat(subagent-agy): add Antigravity CLI one-shot subagent
+ provider
+
+---
+ packages/subagent/subagent-agy/README.md      |  44 ++++
+ .../subagent/subagent-agy/cordis.patch.yml    |   9 +
+ packages/subagent/subagent-agy/locale/de.json |   6 +
+ packages/subagent/subagent-agy/locale/en.json |   6 +
+ packages/subagent/subagent-agy/locale/es.json |   6 +
+ packages/subagent/subagent-agy/locale/fr.json |   6 +
+ packages/subagent/subagent-agy/locale/ja.json |   6 +
+ packages/subagent/subagent-agy/locale/pt.json |   6 +
+ packages/subagent/subagent-agy/locale/ru.json |   6 +
+ packages/subagent/subagent-agy/locale/zh.json |   6 +
+ packages/subagent/subagent-agy/package.json   |  51 +++++
+ packages/subagent/subagent-agy/src/index.ts   |  87 ++++++++
+ packages/subagent/subagent-agy/src/run.ts     | 155 +++++++++++++
+ .../subagent-agy/tests/subagent-agy.spec.ts   | 210 ++++++++++++++++++
+ packages/subagent/subagent-agy/tsconfig.json  |  39 ++++
+ pnpm-lock.yaml                                |  34 +++
+ scripts/product-package-policy.ts             |   1 +
+ tsconfig.base.json                            |   1 +
+ tsconfig.host.json                            |   1 +
+ 19 files changed, 680 insertions(+)
+ create mode 100644 packages/subagent/subagent-agy/README.md
+ create mode 100644 packages/subagent/subagent-agy/cordis.patch.yml
+ create mode 100644 packages/subagent/subagent-agy/locale/de.json
+ create mode 100644 packages/subagent/subagent-agy/locale/en.json
+ create mode 100644 packages/subagent/subagent-agy/locale/es.json
+ create mode 100644 packages/subagent/subagent-agy/locale/fr.json
+ create mode 100644 packages/subagent/subagent-agy/locale/ja.json
+ create mode 100644 packages/subagent/subagent-agy/locale/pt.json
+ create mode 100644 packages/subagent/subagent-agy/locale/ru.json
+ create mode 100644 packages/subagent/subagent-agy/locale/zh.json
+ create mode 100644 packages/subagent/subagent-agy/package.json
+ create mode 100644 packages/subagent/subagent-agy/src/index.ts
+ create mode 100644 packages/subagent/subagent-agy/src/run.ts
+ create mode 100644 packages/subagent/subagent-agy/tests/subagent-agy.spec.ts
+ create mode 100644 packages/subagent/subagent-agy/tsconfig.json
+
+diff --git a/packages/subagent/subagent-agy/README.md b/packages/subagent/subagent-agy/README.md
+new file mode 100644
+index 0000000000..66781ec2f5
+--- /dev/null
++++ b/packages/subagent/subagent-agy/README.md
+@@ -0,0 +1,44 @@
++# @deepseek-ai/dsh-subagent-agy
++
++Direct Antigravity CLI (`agy`) one-shot subagent provider for DeepSeek Harness (`dsh`).
++
++## Summary
++
++`@deepseek-ai/dsh-subagent-agy` enables a parent DeepSeek Harness session to delegate tasks directly to a fresh, unattended Antigravity CLI (`agy`) instance in the parent session's workspace.
++
++Unlike ACP-based integrations, this package directly bridges `agy` via subprocess stdio (`-p <prompt>`, `--mode auto`, `--dangerously-skip-permissions`):
++- **Direct Input**: Injects prompt text from `request.prompt` and workspace directory `request.cwd`.
++- **Direct Output**: Collects stdout as assistant output blocks and stderr as diagnostic messages.
++- **Full Lifecycle**: Handles cancellation (`SIGTERM`/`SIGKILL`), exit codes, and Cordis provider registration on `ctx.subagents`.
++
++## Configuration
++
++| Field | Default | Description |
++|---|---|---|
++| `providerName` | `'agy'` | Unique provider name registered on `ctx.subagents` |
++| `binPath` | `'agy'` | Path to the `agy` binary |
++| `mode` | `'auto'` | Execution mode passed to agy (`'auto'`, `'accept-edits'`, `'plan'`) |
++| `model` | (none) | Optional model override passed via `--model` |
++| `env` | `{}` | Additional environment variables for the child process |
++| `disposeGraceMs` | `3000` | Milliseconds before force-killing with SIGKILL on abort |
++
++## Exposing the Tool
++
++Add the following to your profile's `cordis.patch.yml` or global configuration:
++
++```yaml
++- insert:
++    - id: subagent-agy
++      name: '@deepseek-ai/dsh-subagent-agy'
++      config:
++        providerName: agy
++        binPath: agy
++        mode: auto
++
++    - id: tool-subagent-agy
++      name: '@deepseek-ai/dsh-tool-subagent'
++      config:
++        provider: agy
++        toolName: subagent_agy
++        maxDepth: provider-managed
++```
+diff --git a/packages/subagent/subagent-agy/cordis.patch.yml b/packages/subagent/subagent-agy/cordis.patch.yml
+new file mode 100644
+index 0000000000..e6eea12bf2
+--- /dev/null
++++ b/packages/subagent/subagent-agy/cordis.patch.yml
+@@ -0,0 +1,9 @@
++- insert:
++    - id: subagent-agy
++      name: '@deepseek-ai/dsh-subagent-agy'
++    - id: tool-subagent-agy
++      name: '@deepseek-ai/dsh-tool-subagent'
++      config:
++        provider: agy
++        toolName: subagent_agy
++        maxDepth: provider-managed
+diff --git a/packages/subagent/subagent-agy/locale/de.json b/packages/subagent/subagent-agy/locale/de.json
+new file mode 100644
+index 0000000000..cb3e2dbe0a
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/de.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Antigravity CLI-Subagent",
++    "description": "Delegieren Sie eine Aufgabe an Antigravity CLI (agy), indem Sie dessen native Einstellungen verwenden."
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/en.json b/packages/subagent/subagent-agy/locale/en.json
+new file mode 100644
+index 0000000000..8074e5e0a7
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/en.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Antigravity CLI subagent",
++    "description": "Delegate one task to the Antigravity CLI (agy) using its native settings."
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/es.json b/packages/subagent/subagent-agy/locale/es.json
+new file mode 100644
+index 0000000000..5d1b3d4d31
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/es.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Subagente Antigravity CLI",
++    "description": "Delegue una tarea a Antigravity CLI (agy) utilizando su configuración nativa."
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/fr.json b/packages/subagent/subagent-agy/locale/fr.json
+new file mode 100644
+index 0000000000..878d9468b2
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/fr.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Sous-agent Antigravity CLI",
++    "description": "Déléguez une tâche à Antigravity CLI (agy) à l'aide de ses paramètres natifs."
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/ja.json b/packages/subagent/subagent-agy/locale/ja.json
+new file mode 100644
+index 0000000000..67b1feacb7
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/ja.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Antigravity CLI サブエージェント",
++    "description": "Antigravity CLI (agy) のネイティブ設定を使用して、単独のタスクを委派します。"
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/pt.json b/packages/subagent/subagent-agy/locale/pt.json
+new file mode 100644
+index 0000000000..e84d87ce34
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/pt.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Antigravity CLI subagente",
++    "description": "Delegue uma tarefa a Antigravity CLI (agy) usando suas configurações nativas."
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/ru.json b/packages/subagent/subagent-agy/locale/ru.json
+new file mode 100644
+index 0000000000..e0f3dd247e
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/ru.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Субагент Antigravity CLI",
++    "description": "Делегируйте одну задачу Antigravity CLI (agy), используя его встроенные настройки."
++  }
++}
+diff --git a/packages/subagent/subagent-agy/locale/zh.json b/packages/subagent/subagent-agy/locale/zh.json
+new file mode 100644
+index 0000000000..126fde3b63
+--- /dev/null
++++ b/packages/subagent/subagent-agy/locale/zh.json
+@@ -0,0 +1,6 @@
++{
++  "meta": {
++    "title": "Antigravity CLI 子智能体",
++    "description": "使用 Antigravity CLI (agy) 原生设置委派单个任务。"
++  }
++}
+diff --git a/packages/subagent/subagent-agy/package.json b/packages/subagent/subagent-agy/package.json
+new file mode 100644
+index 0000000000..796dcf49ea
+--- /dev/null
++++ b/packages/subagent/subagent-agy/package.json
+@@ -0,0 +1,51 @@
++{
++  "name": "@deepseek-ai/dsh-subagent-agy",
++  "description": "Antigravity CLI (agy) direct one-shot subagent provider",
++  "version": "0.1.0",
++  "publishConfig": {
++    "access": "public"
++  },
++  "type": "module",
++  "main": "lib/index.js",
++  "types": "lib/types/index.d.ts",
++  "exports": {
++    ".": {
++      "types": "./lib/types/index.d.ts",
++      "default": "./lib/index.js"
++    },
++    "./src/*": "./src/*",
++    "./package.json": "./package.json",
++    "./locale/*.json": "./locale/*.json",
++    "./cordis.patch.yml": "./cordis.patch.yml"
++  },
++  "files": [
++    "locale/*.json",
++    "lib/index.js",
++    "cordis.patch.yml",
++    "lib/types/**/*.d.ts"
++  ],
++  "license": "MIT",
++  "dsh": {
++    "bundle": {
++      "patch": "./cordis.patch.yml"
++    }
++  },
++  "peerDependencies": {
++    "@deepseek-ai/cordis": "workspace:~",
++    "@deepseek-ai/dsh-llm": "workspace:*",
++    "@deepseek-ai/dsh-session": "workspace:*",
++    "@deepseek-ai/dsh-subagent": "workspace:*",
++    "@deepseek-ai/dsh-timeout": "workspace:*"
++  },
++  "dependencies": {
++    "@deepseek-ai/dsh-brand": "workspace:*",
++    "@deepseek-ai/schemastery": "workspace:~",
++    "@deepseek-ai/dsh-tool-subagent": "workspace:*"
++  },
++  "devDependencies": {
++    "@deepseek-ai/cordis": "workspace:~",
++    "@deepseek-ai/dsh-agent": "workspace:*",
++    "@deepseek-ai/dsh-subagent": "workspace:*",
++    "@deepseek-ai/dsh-tools": "workspace:*"
++  }
++}
+diff --git a/packages/subagent/subagent-agy/src/index.ts b/packages/subagent/subagent-agy/src/index.ts
+new file mode 100644
+index 0000000000..5b8bdc39e9
+--- /dev/null
++++ b/packages/subagent/subagent-agy/src/index.ts
+@@ -0,0 +1,87 @@
++/**
++ * Antigravity CLI (agy) subagent provider plugin for DeepSeek Harness.
++ * Registers an out-of-process one-shot child provider on `ctx.subagents`
++ * that directly interfaces with the agy CLI's stdin/stdout/stderr.
++ *
++ * @module @deepseek-ai/dsh-subagent-agy
++ */
++
++import type { Context } from '@deepseek-ai/cordis'
++import z from '@deepseek-ai/schemastery'
++import {
++  NO_START_CAPABILITIES,
++  assertUsableCwd,
++  type ResolvedSubagentStartRequest,
++  type SubagentCapabilities,
++  type SubagentProvider,
++} from '@deepseek-ai/dsh-subagent'
++import {
++  startAgyRun,
++  type AgyRunConfig,
++} from './run.ts'
++
++export const name = 'subagent-agy'
++export const inject = ['subagents']
++
++const DEFAULT_PROVIDER_NAME = 'agy'
++
++/** Deployment configuration settings for the agy subagent provider. */
++export interface Config extends AgyRunConfig {
++  /** Registry name on `ctx.subagents` (default `agy`). */
++  providerName?: string
++}
++
++export const Config: z<Config> = z.object({
++  providerName: z.string().default(DEFAULT_PROVIDER_NAME),
++  binPath: z.string().default('agy'),
++  model: z.string(),
++  mode: z.union(['auto', 'accept-edits', 'plan'] as const).default('auto'),
++  env: z.dict(z.string()).default({}),
++  disposeGraceMs: z.number().default(3000),
++})
++
++type ResolvedConfig = Required<Pick<Config, 'providerName' | 'binPath' | 'mode' | 'env' | 'disposeGraceMs'>> &
++  Pick<Config, 'model'>
++
++class AgyProvider implements SubagentProvider {
++  readonly capabilities: SubagentCapabilities = NO_START_CAPABILITIES
++  readonly inheritsParentContext = false
++
++  constructor(
++    readonly name: string,
++    private readonly config: ResolvedConfig,
++  ) {}
++
++  start(request: ResolvedSubagentStartRequest) {
++    let cwd: string
++    try {
++      cwd = assertUsableCwd('subagent-agy', 'child cwd', request.cwd)
++    } catch (error: unknown) {
++      if (request.signal.aborted) {
++        throw new Error('subagent-agy: request was aborted before CLI startup')
++      }
++      throw error
++    }
++
++    return Promise.resolve(startAgyRun({ ...request, cwd }, this.config))
++  }
++}
++
++/**
++ * Applies the agy subagent plugin into the Cordis context.
++ *
++ * @param ctx - The Cordis application context.
++ * @param config - Provider configuration options.
++ */
++export function apply(ctx: Context, config: Config): void {
++  const resolved: ResolvedConfig = {
++    providerName: config.providerName || DEFAULT_PROVIDER_NAME,
++    binPath: config.binPath || 'agy',
++    mode: config.mode || 'auto',
++    env: config.env || {},
++    disposeGraceMs: config.disposeGraceMs ?? 3000,
++    ...(config.model !== undefined ? { model: config.model } : {}),
++  }
++
++  ctx.subagents.registerProvider(new AgyProvider(resolved.providerName, resolved))
++}
+diff --git a/packages/subagent/subagent-agy/src/run.ts b/packages/subagent/subagent-agy/src/run.ts
+new file mode 100644
+index 0000000000..1f0f7c39ad
+--- /dev/null
++++ b/packages/subagent/subagent-agy/src/run.ts
+@@ -0,0 +1,155 @@
++/**
++ * One-shot Antigravity CLI (agy) subagent child lifecycle: spawn the native
++ * agy executable with -p, stream stdout/stderr, respect cancellation signals,
++ * and settle the terminal result as SubagentResult.
++ *
++ * @module @deepseek-ai/dsh-subagent-agy/run
++ */
++
++import { spawn } from 'node:child_process'
++import { randomUUID } from 'node:crypto'
++import { brandString } from '@deepseek-ai/dsh-brand'
++import type { ContentBlock } from '@deepseek-ai/dsh-llm'
++import type { SessionId } from '@deepseek-ai/dsh-session'
++import type {
++  ResolvedSubagentStartRequest,
++  SubagentResult,
++  SubagentRun,
++} from '@deepseek-ai/dsh-subagent'
++
++/** Supported execution modes for the Antigravity CLI. */
++export type AgyExecutionMode = 'auto' | 'accept-edits' | 'plan'
++
++/** Configuration options for spawning the agy subagent run. */
++export interface AgyRunConfig {
++  /** Path to the agy binary. Defaults to 'agy'. */
++  binPath?: string
++  /** Model name passed to agy via `--model`. */
++  model?: string
++  /** Agent execution mode passed to agy via `--mode`. Defaults to 'auto'. */
++  mode?: AgyExecutionMode
++  /** Additional environment variables passed to the child process. */
++  env?: Record<string, string>
++  /** Grace period in milliseconds before SIGKILL after SIGTERM. */
++  disposeGraceMs?: number
++}
++
++/**
++ * Extracts plain text from the request prompt content blocks.
++ *
++ * @param request - Resolved subagent start request containing prompt blocks.
++ * @returns Combined prompt text.
++ */
++export function extractPromptText(request: ResolvedSubagentStartRequest): string {
++  return request.prompt
++    .filter((b: ContentBlock): b is ContentBlock & { type: 'text'; text: string } => b.type === 'text')
++    .map(b => b.text)
++    .join('\n\n')
++}
++
++/**
++ * Spawns an Antigravity CLI (agy) process and returns a managed SubagentRun handle.
++ *
++ * @param request - The resolved subagent start request with absolute cwd and prompt.
++ * @param config - Options controlling binary path, model, mode, and process teardown.
++ * @returns Managed subagent run handle.
++ */
++export function startAgyRun(
++  request: ResolvedSubagentStartRequest,
++  config: AgyRunConfig = {},
++): SubagentRun {
++  const promptText = extractPromptText(request)
++  const bin = config.binPath || 'agy'
++
++  const args: string[] = [
++    '-p', promptText,
++    '--dangerously-skip-permissions',
++    '--mode', config.mode || 'auto',
++  ]
++  if (config.model) {
++    args.push('--model', config.model)
++  }
++
++  const child = spawn(bin, args, {
++    cwd: request.cwd,
++    env: { ...process.env, ...config.env },
++    stdio: ['ignore', 'pipe', 'pipe'],
++  })
++
++  let stdoutText = ''
++  let stderrText = ''
++
++  child.stdout.setEncoding('utf8')
++  child.stderr.setEncoding('utf8')
++
++  child.stdout.on('data', (chunk: string) => {
++    stdoutText += chunk
++  })
++  child.stderr.on('data', (chunk: string) => {
++    stderrText += chunk
++  })
++
++  let disposed = false
++  const dispose = (): Promise<void> => {
++    if (disposed) return Promise.resolve()
++    disposed = true
++    if (child.exitCode === null && child.signalCode === null) {
++      child.kill('SIGTERM')
++      const graceMs = config.disposeGraceMs ?? 3000
++      const timer = setTimeout(() => {
++        try {
++          child.kill('SIGKILL')
++        } catch {
++          // child process already exited
++        }
++      }, graceMs)
++      timer.unref()
++    }
++    return Promise.resolve()
++  }
++
++  const onAbort = () => {
++    void dispose()
++  }
++  request.signal.addEventListener('abort', onAbort, { once: true })
++
++  const result = new Promise<SubagentResult>((resolve) => {
++    child.on('close', (code, signal) => {
++      request.signal.removeEventListener('abort', onAbort)
++
++      if (request.signal.aborted || signal === 'SIGTERM' || signal === 'SIGKILL') {
++        resolve({
++          output: stdoutText ? [{ type: 'text', text: stdoutText.trim() }] : [],
++          diagnostic: stderrText.trim() || 'Subagent execution was aborted',
++          stopReason: 'aborted',
++        })
++      } else if (code === 0) {
++        resolve({
++          output: [{ type: 'text', text: stdoutText.trim() }],
++          stopReason: 'completed',
++        })
++      } else {
++        resolve({
++          output: stdoutText ? [{ type: 'text', text: stdoutText.trim() }] : [],
++          diagnostic: stderrText.trim() || `agy exited with code ${code}`,
++          stopReason: 'error',
++        })
++      }
++    })
++
++    child.on('error', (err) => {
++      request.signal.removeEventListener('abort', onAbort)
++      resolve({
++        output: [],
++        diagnostic: `Failed to spawn agy: ${err.message}`,
++        stopReason: 'error',
++      })
++    })
++  })
++
++  return {
++    id: brandString<SessionId>(randomUUID()),
++    result,
++    dispose,
++  }
++}
+diff --git a/packages/subagent/subagent-agy/tests/subagent-agy.spec.ts b/packages/subagent/subagent-agy/tests/subagent-agy.spec.ts
+new file mode 100644
+index 0000000000..63c4c7a457
+--- /dev/null
++++ b/packages/subagent/subagent-agy/tests/subagent-agy.spec.ts
+@@ -0,0 +1,210 @@
++import { chmodSync, unlinkSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { afterAll, describe, expect, it } from 'vitest'
++import type { Agent } from '@deepseek-ai/dsh-agent'
++import { NO_START_CAPABILITIES, type SubagentProvider } from '@deepseek-ai/dsh-subagent'
++import * as subagentAgy from '../src/index.ts'
++import { extractPromptText, startAgyRun } from '../src/run.ts'
++
++describe('subagent-agy unit and integration tests', () => {
++  describe('extractPromptText', () => {
++    it('extracts and joins text blocks', () => {
++      const prompt = extractPromptText({
++        cwd: process.cwd(),
++        prompt: [
++          { type: 'text', text: 'First block' },
++          { type: 'text', text: 'Second block' },
++        ],
++        parent: {} as Agent,
++        signal: new AbortController().signal,
++      })
++
++      expect(prompt).toBe('First block\n\nSecond block')
++    })
++
++    it('returns empty string when no text blocks are present', () => {
++      const prompt = extractPromptText({
++        cwd: process.cwd(),
++        prompt: [],
++        parent: {} as Agent,
++        signal: new AbortController().signal,
++      })
++
++      expect(prompt).toBe('')
++    })
++  })
++
++  describe('startAgyRun with mock agy executable', () => {
++    const mockScriptPath = join(tmpdir(), `mock-agy-${Date.now()}-${Math.random().toString(36).slice(2)}.mjs`)
++
++    // Create a mock executable simulating the agy CLI contract
++    const mockScriptContent = `#!/usr/bin/env node
++const args = process.argv.slice(2);
++const pIdx = args.indexOf('-p');
++const prompt = pIdx !== -1 ? args[pIdx + 1] : '';
++
++if (process.env.MOCK_FAIL === '1') {
++  console.error('mock error occurred');
++  process.exit(1);
++} else if (process.env.MOCK_HANG === '1') {
++  setInterval(() => {}, 1000);
++} else {
++  console.log('Result for: ' + prompt);
++  process.exit(0);
++}
++`
++    writeFileSync(mockScriptPath, mockScriptContent, 'utf8')
++    chmodSync(mockScriptPath, 0o755)
++
++    afterAll(() => {
++      try {
++        unlinkSync(mockScriptPath)
++      } catch {
++        // file already deleted
++      }
++    })
++
++    it('successfully collects output on clean exit', async () => {
++      const controller = new AbortController()
++      const run = startAgyRun(
++        {
++          cwd: process.cwd(),
++          prompt: [{ type: 'text', text: 'hello agy' }],
++          parent: {} as Agent,
++          signal: controller.signal,
++        },
++        {
++          binPath: mockScriptPath,
++          mode: 'auto',
++        },
++      )
++
++      expect(run.id).toBeDefined()
++      const result = await run.result
++
++      expect(result.stopReason).toBe('completed')
++      expect(result.output).toEqual([
++        { type: 'text', text: 'Result for: hello agy' },
++      ])
++      expect(result.diagnostic).toBeUndefined()
++    })
++
++    it('handles process error code and captures stderr as diagnostic', async () => {
++      const controller = new AbortController()
++      const run = startAgyRun(
++        {
++          cwd: process.cwd(),
++          prompt: [{ type: 'text', text: 'failing task' }],
++          parent: {} as Agent,
++          signal: controller.signal,
++        },
++        {
++          binPath: mockScriptPath,
++          env: { MOCK_FAIL: '1' },
++        },
++      )
++
++      const result = await run.result
++
++      expect(result.stopReason).toBe('error')
++      expect(result.diagnostic).toContain('mock error occurred')
++    })
++
++    it('handles abort signal and reports aborted stopReason', async () => {
++      const controller = new AbortController()
++      const run = startAgyRun(
++        {
++          cwd: process.cwd(),
++          prompt: [{ type: 'text', text: 'long running task' }],
++          parent: {} as Agent,
++          signal: controller.signal,
++        },
++        {
++          binPath: mockScriptPath,
++          env: { MOCK_HANG: '1' },
++          disposeGraceMs: 500,
++        },
++      )
++
++      // Trigger abort while running
++      setTimeout(() => {
++        controller.abort()
++      }, 50)
++
++      const result = await run.result
++      expect(result.stopReason).toBe('aborted')
++    })
++
++    it('dispose cleanly terminates process', async () => {
++      const controller = new AbortController()
++      const run = startAgyRun(
++        {
++          cwd: process.cwd(),
++          prompt: [{ type: 'text', text: 'hang forever' }],
++          parent: {} as Agent,
++          signal: controller.signal,
++        },
++        {
++          binPath: mockScriptPath,
++          env: { MOCK_HANG: '1' },
++          disposeGraceMs: 500,
++        },
++      )
++
++      setTimeout(() => {
++        void run.dispose()
++      }, 50)
++
++      const result = await run.result
++      expect(['aborted', 'error']).toContain(result.stopReason)
++    })
++  })
++
++  describe('Cordis plugin registration', () => {
++    it('registers subagent-agy provider on ctx.subagents', () => {
++      let registered: SubagentProvider | undefined
++      const mockCtx = {
++        subagents: {
++          registerProvider: (p: SubagentProvider) => { registered = p },
++        },
++      } as never
++
++      subagentAgy.apply(mockCtx, {
++        providerName: 'agy-custom',
++        binPath: 'agy',
++        mode: 'auto',
++      })
++
++      expect(registered).toBeDefined()
++      expect(registered?.name).toBe('agy-custom')
++      expect(registered?.capabilities).toEqual(NO_START_CAPABILITIES)
++      expect(registered?.inheritsParentContext).toBe(false)
++    })
++
++    it('rejects an invalid cwd before spawn', () => {
++      let registered: SubagentProvider | undefined
++      const mockCtx = {
++        subagents: {
++          registerProvider: (p: SubagentProvider) => { registered = p },
++        },
++      } as never
++
++      subagentAgy.apply(mockCtx, {
++        providerName: 'agy',
++        binPath: 'agy',
++      })
++
++      expect(registered).toBeDefined()
++
++      expect(() =>
++        registered?.start({
++          cwd: '/non/existent/path/for/dsh/test',
++          prompt: [{ type: 'text', text: 'test' }],
++          parent: {} as Agent,
++          signal: new AbortController().signal,
++        }),
++      ).toThrow(/is not an accessible directory/)
++    })
++  })
++})
+diff --git a/packages/subagent/subagent-agy/tsconfig.json b/packages/subagent/subagent-agy/tsconfig.json
+new file mode 100644
+index 0000000000..b60db3bef7
+--- /dev/null
++++ b/packages/subagent/subagent-agy/tsconfig.json
+@@ -0,0 +1,39 @@
++{
++  "extends": "../../../tsconfig.base.json",
++  "compilerOptions": {
++    "rootDir": "src",
++    "outDir": "lib/types"
++  },
++  "include": [
++    "src"
++  ],
++  "references": [
++    {
++      "path": "../../../vendor/cosmokit"
++    },
++    {
++      "path": "../../../vendor/cordis"
++    },
++    {
++      "path": "../../../vendor/schemastery"
++    },
++    {
++      "path": "../../core/agent"
++    },
++    {
++      "path": "../../llm/llm"
++    },
++    {
++      "path": "../../core/session"
++    },
++    {
++      "path": "../subagent"
++    },
++    {
++      "path": "../../util/brand"
++    },
++    {
++      "path": "../../util/timeout"
++    }
++  ]
++}
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 774164ab6d..c41c46ac99 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -18715,6 +18715,40 @@ importers:
+         specifier: workspace:*
+         version: link:../tool-subagent
+ 
++  packages/subagent/subagent-agy:
++    dependencies:
++      '@deepseek-ai/dsh-brand':
++        specifier: workspace:*
++        version: link:../../util/brand
++      '@deepseek-ai/dsh-llm':
++        specifier: workspace:*
++        version: link:../../llm/llm
++      '@deepseek-ai/dsh-session':
++        specifier: workspace:*
++        version: link:../../core/session
++      '@deepseek-ai/dsh-timeout':
++        specifier: workspace:*
++        version: link:../../util/timeout
++      '@deepseek-ai/dsh-tool-subagent':
++        specifier: workspace:*
++        version: link:../tool-subagent
++      '@deepseek-ai/schemastery':
++        specifier: link:../../../vendor/schemastery
++        version: link:../../../vendor/schemastery
++    devDependencies:
++      '@deepseek-ai/cordis':
++        specifier: workspace:~
++        version: link:../../../vendor/cordis
++      '@deepseek-ai/dsh-agent':
++        specifier: workspace:*
++        version: link:../../core/agent
++      '@deepseek-ai/dsh-subagent':
++        specifier: workspace:*
++        version: link:../subagent
++      '@deepseek-ai/dsh-tools':
++        specifier: workspace:*
++        version: link:../../core/tools
++
+   packages/subagent/subagent-claude-code:
+     dependencies:
+       '@anthropic-ai/claude-agent-sdk':
+diff --git a/scripts/product-package-policy.ts b/scripts/product-package-policy.ts
+index dbff22f2d5..e75e19b38b 100644
+--- a/scripts/product-package-policy.ts
++++ b/scripts/product-package-policy.ts
+@@ -37,6 +37,7 @@ export const PRODUCT_PACKAGE_POLICY: Readonly<Record<string, ProductPackagePolic
+   'packages/subagent/subagent-acp': { category: 'optional', reason: 'Requires a configured external ACP agent command.' },
+   'packages/subagent/subagent-claude-code': { category: 'optional', reason: 'Separately installed native Claude Code agent integration.' },
+   'packages/subagent/subagent-codex': { category: 'optional', reason: 'Separately installed native Codex agent integration.' },
++  'packages/subagent/subagent-agy': { category: 'optional', reason: 'Separately installed native Antigravity CLI (agy) subagent integration.' },
+   'packages/subagent/subagent-dsh-sdk': { category: 'optional', reason: 'Requires an explicitly configured external DSH home.' },
+   'packages/connector/linear': { category: 'optional', reason: 'Separately installed app plugin that requires the user to authorize a Linear account.' },
+   'packages/connector/notion': { category: 'optional', reason: 'Separately installed app plugin that requires the user to authorize a Notion account.' },
+diff --git a/tsconfig.base.json b/tsconfig.base.json
+index 38bced25a3..86fefe7f77 100644
+--- a/tsconfig.base.json
++++ b/tsconfig.base.json
+@@ -615,6 +615,7 @@
+       "@deepseek-ai/dsh-subagent-acp": ["./packages/subagent/subagent-acp/src"],
+       "@deepseek-ai/dsh-subagent-claude-code": ["./packages/subagent/subagent-claude-code/src"],
+       "@deepseek-ai/dsh-subagent-codex": ["./packages/subagent/subagent-codex/src"],
++      "@deepseek-ai/dsh-subagent-agy": ["./packages/subagent/subagent-agy/src"],
+       "@deepseek-ai/dsh-subagent-dsh-sdk": ["./packages/subagent/subagent-dsh-sdk/src"],
+       "@deepseek-ai/dsh-subagent-fork-in-process": ["./packages/subagent/subagent-fork-in-process/src"],
+       "@deepseek-ai/dsh-subagent-spawn-in-process": ["./packages/subagent/subagent-spawn-in-process/src"],
+diff --git a/tsconfig.host.json b/tsconfig.host.json
+index f2046d3412..7b20ab0976 100644
+--- a/tsconfig.host.json
++++ b/tsconfig.host.json
+@@ -605,6 +605,7 @@
+     { "path": "./packages/subagent/subagent-acp" },
+     { "path": "./packages/subagent/subagent-claude-code" },
+     { "path": "./packages/subagent/subagent-codex" },
++    { "path": "./packages/subagent/subagent-agy" },
+     { "path": "./packages/experimental/subagent-oar" },
+     { "path": "./packages/experimental/tool-subagent-oar" },
+     { "path": "./packages/subagent/subagent-dsh-sdk" },
+-- 
+2.43.0
+

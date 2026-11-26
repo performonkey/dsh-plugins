@@ -1,0 +1,315 @@
+diff --git a/apps/web/tests/pin-browse-picker.overlay.yml b/apps/web/tests/pin-browse-picker.overlay.yml
+index 16d8335c2a..1e8afecc7a 100644
+--- a/apps/web/tests/pin-browse-picker.overlay.yml
++++ b/apps/web/tests/pin-browse-picker.overlay.yml
+@@ -2,12 +2,7 @@
+ # in-browser directory picker. The shipped row is `-auto`, which resolves to
+ # the native OS chooser on a loopback bind with a local display — an
+ # interaction a Playwright page cannot drive, so the resolved backend would
+-# otherwise decide whether the smoke passes. The disable+insert pair mirrors
+-# apps/web/tests/scaffold.ts.
++# otherwise decide whether the smoke passes.
+ - id: directory-picker
+-  disabled: true
+-- insert:
+-    - id: directory-picker-browse
+-      name: '@deepseek-ai/dsh-host-directory-picker-browse'
+-    - id: ui-directory-picker-browse
+-      name: '@deepseek-ai/dsh-client-ui-directory-picker-browse'
++  config:
++    backend: browse
+diff --git a/packages/host/directory-picker-auto/README.i18n.yaml b/packages/host/directory-picker-auto/README.i18n.yaml
+index 5a69888f50..b714416b82 100644
+--- a/packages/host/directory-picker-auto/README.i18n.yaml
++++ b/packages/host/directory-picker-auto/README.i18n.yaml
+@@ -9,8 +9,8 @@
+   en: 919d44a5781ac8be
+   zh: 0e7a812a5af49125
+ /deepseek-ai-dsh-host-directory-picker-auto/summary:
+-  en: 3ff3bda883cccfc0
+-  zh: a01af7bac5580514
++  en: 255774b727bbb98f
++  zh: 84a4b22f59ff2289
+ /deepseek-ai-dsh-host-directory-picker-auto/table-of-contents:
+   en: d152484eb41ac6b4
+   zh: 09388d293f9be9cb
+@@ -24,11 +24,11 @@
+   en: 6571c17daecc1e29
+   zh: d70089d67e41a32e
+ /deepseek-ai-dsh-host-directory-picker-auto/use-this-package/pinning-an-interaction:
+-  en: a7e61292ef261aa8
+-  zh: ae8bb5a1ada21d21
++  en: 6206760a5b33c843
++  zh: f46186141fc36028
+ /deepseek-ai-dsh-host-directory-picker-auto/use-this-package/observable-failures:
+-  en: 764e80ffbfd4d19e
+-  zh: dd2f61b462023031
++  en: 7dd940b936758dfc
++  zh: 1e5c8b6cfdd29e3c
+ /deepseek-ai-dsh-host-directory-picker-auto/understand-the-implementation:
+   en: 42b15ac6321706aa
+   zh: 4ed0861911abaf5d
+@@ -51,8 +51,8 @@
+   en: ca75c51c89c2c9b0
+   zh: de54f3467ef3b9be
+ /deepseek-ai-dsh-host-directory-picker-auto/known-limitations-and-deferred-work:
+-  en: 77982e87798474a3
+-  zh: b60a3ec8b4ce49e8
++  en: b4cc30481459649c
++  zh: af25d0c98a587107
+ /deepseek-ai-dsh-host-directory-picker-auto/known-limitations-and-deferred-work/dev-note:
+   en: e67f633dc6fe7773
+   zh: 3bb0c20c93f16f98
+diff --git a/packages/host/directory-picker-auto/README.md b/packages/host/directory-picker-auto/README.md
+index 518916028a..8e4f5bcbaf 100644
+--- a/packages/host/directory-picker-auto/README.md
++++ b/packages/host/directory-picker-auto/README.md
+@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
+ 
+ ## Summary
+ 
+-`dsh-host-directory-picker-auto` picks the right directory-picking interaction for every boot: it resolves the host's situation once at boot and mounts the matching backend — [native](../directory-picker-native/README.md) or [browse](../directory-picker-browse/README.md) — together with its browser half, as real Loader entries in the in-memory root tree. The resolution is one pure boot-time sample: `native` requires no remote-authority trust, a loopback-only bind, a non-SSH launch, and a servable display session; anything ambiguous resolves to `browse`, which works everywhere. Pinning an interaction means composing that backend directly. The mounted capability stays stable for the service lifetime, as the seam requires.
++`dsh-host-directory-picker-auto` picks the right directory-picking interaction for every boot: it resolves the host's situation once at boot and mounts the matching backend — [native](../directory-picker-native/README.md) or [browse](../directory-picker-browse/README.md) — together with its browser half, as real Loader entries in the in-memory root tree. The resolution is one pure boot-time sample: `native` requires no remote-authority trust, a loopback-only bind, a non-SSH launch, and a servable display session; anything ambiguous resolves to `browse`, which works everywhere. An optional `backend` configuration selects an interaction explicitly. The mounted capability stays stable for the service lifetime, as the seam requires.
+ 
+ ## Table of Contents
+ 
+@@ -37,11 +37,11 @@ The resolved interaction arrives as an ordinary Loader entry: the backend regist
+ 
+ ### Pinning an interaction
+ 
+-Pinning is not a config field here: compose the `-native` or `-browse` row directly instead of this one — that is the seam's documented swap point. Mounting the chooser and a backend row together fails loud (duplicate `directoryPicker` service, duplicate client flow in the `single` holes).
++Set `backend: native` or `backend: browse` on this plugin to override adaptive selection. Omit `backend` to resolve from host facts. Mounting the chooser and a backend row together fails loud (duplicate `directoryPicker` service, duplicate client flow in the `single` holes).
+ 
+ ### Observable failures
+ 
+-A wrong `native` choice degrades to the backend's existing retryable failure dialog rather than a broken composition; composing `-browse` directly selects the safe interaction for deployments whose situation the probe cannot prove.
++A wrong `native` choice degrades to the backend's existing retryable failure dialog rather than a broken composition; setting `backend: browse` selects the in-page interaction for deployments whose situation the probe cannot prove.
+ 
+ -----
+ 
+@@ -106,7 +106,7 @@ None; this package neither assembles nor sends a provider request.
+ 
+ These limits define when the boot-time sample can misjudge the host. They are current package constraints, not a task backlog.
+ 
+-- **Detection infers operator location from launch context, which no launch-side signal can prove** — a tmux session detached from its SSH launch loses the `SSH_*` markers; a Darwin process outside an Aqua session still counts as displayed; and a workstation-local launch later reached through `ssh -L` arrives from `127.0.0.1`, resolves `native`, and opens the chooser on the unattended workstation. A wrong `native` choice degrades to the backend's existing retryable failure dialog, and composing `-browse` directly selects the safe interaction for such deployments.
++- **Detection infers operator location from launch context, which no launch-side signal can prove** — a tmux session detached from its SSH launch loses the `SSH_*` markers; a Darwin process outside an Aqua session still counts as displayed; and a workstation-local launch later reached through `ssh -L` arrives from `127.0.0.1`, resolves `native`, and opens the chooser on the unattended workstation. A wrong `native` choice degrades to the backend's existing retryable failure dialog, and setting `backend: browse` selects the in-page interaction for such deployments.
+ - **The Linux chooser probe reads `PATH` only** — a zenity/kdialog reachable some other way (shell alias, non-PATH install) still resolves `browse`; installing either binary on `PATH` restores `native` eligibility at the next boot.
+ - **Boot-time only** — one resolution serves every client of the boot; per-connection adaptivity (native for a local browser, browse for a remote one, same server) would need a per-client capability and the wire advertisement the seam does not carry, and waits for a deployment that serves both at once.
+ - **A loopback-presenting proxy hides a remote browser** — a reverse proxy that rewrites both the request `Host` and `Origin` to a loopback authority (say `127.0.0.1:3080`), with no non-loopback `trustedHosts` entry, passes the browser-trust fence: a browser's `/api` POST carries `Origin: https://app.example`, which the Origin fence rejects unless the proxy rewrites that header too. Only then does a remote browser still resolve `native` and open the chooser on the host display.
+diff --git a/packages/host/directory-picker-auto/README.zh.md b/packages/host/directory-picker-auto/README.zh.md
+index 7fba47e345..debc5f8c17 100644
+--- a/packages/host/directory-picker-auto/README.zh.md
++++ b/packages/host/directory-picker-auto/README.zh.md
+@@ -9,7 +9,7 @@ kind: "package-reference"
+ 
+ ## 概述
+ 
+-`dsh-host-directory-picker-auto` 为每次启动选出正确的目录选择交互：它在启动时一次性判定宿主处境，并把匹配的后端——[原生](../directory-picker-native/README.zh.md)或[浏览](../directory-picker-browse/README.zh.md)——连同其 browser 半侧一起，作为真实的 Loader 条目挂进内存根树。判定是一次纯函数的启动时采样：`native` 要求无远程 authority 信任、仅回环绑定、非 SSH 启动与可服务的显示会话；任何含糊情形都判定为处处可用的 `browse`。固定某种交互就是直接组合那个后端。挂载的能力在服务生命周期内保持稳定，符合 seam 的要求。
++`dsh-host-directory-picker-auto` 为每次启动选出正确的目录选择交互：它在启动时一次性判定宿主处境，并把匹配的后端——[原生](../directory-picker-native/README.zh.md)或[浏览](../directory-picker-browse/README.zh.md)——连同其 browser 半侧一起，作为真实的 Loader 条目挂进内存根树。判定是一次纯函数的启动时采样：`native` 要求无远程 authority 信任、仅回环绑定、非 SSH 启动与可服务的显示会话；任何含糊情形都判定为处处可用的 `browse`。可选的 `backend` 配置可显式选择交互。挂载的能力在服务生命周期内保持稳定，符合 seam 的要求。
+ 
+ ## 目录
+ 
+@@ -37,11 +37,11 @@ kind: "package-reference"
+ 
+ ### 固定某种交互
+ 
+-固定交互在这里不是配置字段：直接组合 `-native` 或 `-browse` 行来替代本行——那才是 seam 文档化的切换点。同时挂载选择器**和**某个后端行会明确报错（重复的 `directoryPicker` 服务、`single` 类 slot 中的重复 client 流程）。
++在本插件设置 `backend: native` 或 `backend: browse` 可覆盖自适应选择；省略 `backend` 时根据宿主事实判定。同时挂载选择器**和**某个后端行会明确报错（重复的 `directoryPicker` 服务、`single` 类 slot 中的重复 client 流程）。
+ 
+ ### 可观察的失败
+ 
+-错误的 `native` 选择会退化为后端既有的可重试失败对话框，而不是坏掉的组合；对探查无法证明其处境的部署，直接组合 `-browse` 即选择安全的交互。
++错误的 `native` 选择会退化为后端既有的可重试失败对话框，而不是坏掉的组合；对探查无法证明其处境的部署，设置 `backend: browse` 即选择页面内交互。
+ 
+ -----
+ 
+@@ -106,7 +106,7 @@ kind: "package-reference"
+ 
+ 这些限制说明启动时采样何时会误判宿主。它们是当前包约束，不是任务积压。
+ 
+-- **探测是从启动上下文推断操作者位置，而任何启动侧信号都无法证明这一点**——从 SSH 启动中脱离的 tmux 会话会丢失 `SSH_*` 标记；Aqua 会话之外的 Darwin 进程仍被算作有显示；在工作站本地启动、之后经 `ssh -L` 访问时，请求会从 `127.0.0.1` 到达，系统会判定 `native`，并把选择器弹在无人值守的工作站上。错误的 `native` 选择会退化为后端既有的可重试失败对话框，而对这类部署，直接组合 `-browse` 即选择安全的交互。
++- **探测是从启动上下文推断操作者位置，而任何启动侧信号都无法证明这一点**——从 SSH 启动中脱离的 tmux 会话会丢失 `SSH_*` 标记；Aqua 会话之外的 Darwin 进程仍被算作有显示；在工作站本地启动、之后经 `ssh -L` 访问时，请求会从 `127.0.0.1` 到达，系统会判定 `native`，并把选择器弹在无人值守的工作站上。错误的 `native` 选择会退化为后端既有的可重试失败对话框，而对这类部署，设置 `backend: browse` 即选择页面内交互。
+ - **Linux 选择器探查只读 `PATH`**——以其他途径可用的 zenity／kdialog（shell 别名、未装在 PATH 上）仍判定为 `browse`；把任一二进制装到 `PATH` 上，下次启动即恢复 `native` 资格。
+ - **仅在启动时判定**——一次判定服务本次启动的所有客户端；按连接自适应（同一台服务器，本地浏览器用 native、远程浏览器用 browse）需要按客户端的能力对象以及 seam 未携带的协议通告，等到出现同时服务两种形态的部署再做。
+ - **以 loopback authority 呈现的代理会藏起远程浏览器**——反向代理把请求 `Host` 和 `Origin` 一并改写为 loopback authority（如 `127.0.0.1:3080`），且没有任何非 loopback 的 `trustedHosts` 条目时，请求才会通过浏览器信任栅栏：浏览器对 `/api` 的 POST 会附带 `Origin: https://app.example`，代理若不改写该头就会被 Origin 栅栏拒绝。也只有在两者都被改写时，远程浏览器才会仍判定为 `native`，选择器在宿主屏幕上打开。
+diff --git a/packages/host/directory-picker-auto/package.json b/packages/host/directory-picker-auto/package.json
+index 303e34c726..576a4e34ec 100644
+--- a/packages/host/directory-picker-auto/package.json
++++ b/packages/host/directory-picker-auto/package.json
+@@ -54,6 +54,7 @@
+     "@deepseek-ai/dsh-host-webserver": "workspace:*"
+   },
+   "dependencies": {
+-    "@deepseek-ai/dsh-launch-environment": "workspace:*"
++    "@deepseek-ai/dsh-launch-environment": "workspace:*",
++    "@deepseek-ai/schemastery": "workspace:~"
+   }
+ }
+diff --git a/packages/host/directory-picker-auto/src/index.ts b/packages/host/directory-picker-auto/src/index.ts
+index 5f324158b4..0dadfb56a2 100644
+--- a/packages/host/directory-picker-auto/src/index.ts
++++ b/packages/host/directory-picker-auto/src/index.ts
+@@ -7,12 +7,12 @@
+  * the client surface occupying ui-workspace's directory-flow holes. Both
+  * arrive as ordinary entries, so the surface is discovered exactly as a
+  * config-row's would be and one resolved choice still swaps both faces;
+- * pinning an interaction remains composing that pair directly instead of this
+- * row.
++ * An explicit backend configuration overrides adaptive resolution.
+  * @module @deepseek-ai/dsh-host-directory-picker-auto
+  */
+ 
+ import type { Context } from '@deepseek-ai/cordis'
++import z from '@deepseek-ai/schemastery'
+ // Empty type imports carry the `connection`, `loader`, and `webServer` Context
+ // merges for the reads below.
+ import type {} from '@deepseek-ai/cordis-plugin-loader'
+@@ -27,6 +27,17 @@ export { canExecute, hasLinuxChooserBinary } from './probe.ts'
+ export type { DirectoryPickerBackendKind, DirectoryPickerEnv, DirectoryPickerHostFacts } from './resolve.ts'
+ export { resolveDirectoryPickerBackend } from './resolve.ts'
+ 
++/** Deployment selection for the directory picker. */
++export interface Config {
++  /** Explicit backend; omitted to resolve from host facts. */
++  backend?: DirectoryPickerBackendKind
++}
++
++/** Validated deployment configuration. */
++export const Config: z<Config> = z.object({
++  backend: z.union([z.const('native'), z.const('browse')]),
++})
++
+ /** Cordis plugin name. */
+ export const name = 'directory-picker-auto'
+ /**
+@@ -65,8 +76,9 @@ export const SURFACE_PACKAGES: Record<DirectoryPickerBackendKind, string> = {
+  * joins their fibers' teardown, so unloading this plugin returns only after
+  * both faces of the mounted interaction (and their dependents) quiesced.
+  * @param ctx - cordis context carrying the injected services.
++ * @param config - Optional explicit backend selection.
+  */
+-export async function apply(ctx: Context): Promise<void> {
++export async function apply(ctx: Context, config: Config): Promise<void> {
+   const backend = resolveDirectoryPickerBackend({
+     bindHost: ctx.webServer.host,
+     allowsRemoteAuthorities: ctx.connection.allowsRemoteAuthorities,
+@@ -74,7 +86,7 @@ export async function apply(ctx: Context): Promise<void> {
+     ssh: launchedThroughSsh(launchEnvironmentOf(ctx)),
+     env: process.env,
+     linuxChooser: hasLinuxChooserBinary(process.env.PATH, canExecute),
+-  })
++  }, config.backend)
+   await ctx.effect(async () => {
+     // Root-tree create: the Loader root is in-memory (commit() is a no-op), so
+     // the mounted rows can never be persisted back into a config file. The
+diff --git a/packages/host/directory-picker-auto/src/resolve.ts b/packages/host/directory-picker-auto/src/resolve.ts
+index 8e7e0ca814..a6328d8683 100644
+--- a/packages/host/directory-picker-auto/src/resolve.ts
++++ b/packages/host/directory-picker-auto/src/resolve.ts
+@@ -49,10 +49,16 @@ const present = (value: string | undefined): boolean => value !== undefined && v
+  * elsewhere (the native backend drives exactly darwin/win32/linux). Anything
+  * ambiguous resolves to
+  * `browse`, which works everywhere.
++ * An explicit backend overrides the adaptive decision.
+  * @param facts - the sampled host facts.
++ * @param forced - Explicit backend selection, if configured.
+  * @returns the backend kind to mount.
+  */
+-export function resolveDirectoryPickerBackend(facts: DirectoryPickerHostFacts): DirectoryPickerBackendKind {
++export function resolveDirectoryPickerBackend(
++  facts: DirectoryPickerHostFacts,
++  forced?: DirectoryPickerBackendKind,
++): DirectoryPickerBackendKind {
++  if (forced !== undefined) return forced
+   if (facts.allowsRemoteAuthorities || !isLoopbackHost(facts.bindHost)) return 'browse'
+   if (facts.ssh) return 'browse'
+   if (facts.platform === 'darwin' || facts.platform === 'win32') return 'native'
+diff --git a/packages/host/directory-picker-auto/tests/loader-composition.spec.ts b/packages/host/directory-picker-auto/tests/loader-composition.spec.ts
+index fabd34d2c7..75dd3baf74 100644
+--- a/packages/host/directory-picker-auto/tests/loader-composition.spec.ts
++++ b/packages/host/directory-picker-auto/tests/loader-composition.spec.ts
+@@ -107,7 +107,7 @@ afterEach(async () => {
+  */
+ async function loadComposition(
+   bindHost: string,
+-  options: { failSurface?: boolean; launchEnvironment?: LaunchEnvironmentSnapshot; remoteAuthorities?: boolean } = {},
++  options: { backend?: string; failSurface?: boolean; launchEnvironment?: LaunchEnvironmentSnapshot; remoteAuthorities?: boolean } = {},
+ ): Promise<{ ctx: Context; configPath: string }> {
+   root = await mkdtemp(join(tmpdir(), 'dsh-directory-picker-auto-'))
+   const configPath = join(root, 'cordis.yml')
+@@ -117,6 +117,7 @@ async function loadComposition(
+     `    host: '${bindHost}'`,
+     '    port: 0',
+     `- name: '${AUTO}'`,
++    ...(options.backend === undefined ? [] : ['  config:', `    backend: ${options.backend}`]),
+     '',
+   ].join('\n'))
+ 
+@@ -274,6 +275,36 @@ describe('real Loader composition', () => {
+     expect(entryNames(ctx)).not.toContain(NATIVE_SURFACE)
+   })
+ 
++  it('mounts the configured backend over the resolution an attended host would pick', { timeout: 60_000 }, async () => {
++    // An attended loopback host resolves to native; the deployment row still
++    // decides, so a config-only overlay can pin the interaction without
++    // disabling the chooser and re-inserting a backend by hand.
++    stubAttendedHost()
++    const { ctx } = await loadComposition('127.0.0.1', { backend: 'browse' })
++
++    expect(entryNames(ctx)).toContain(BROWSE)
++    expect(entryNames(ctx)).toContain(BROWSE_SURFACE)
++    expect(entryNames(ctx)).not.toContain(NATIVE)
++    expect(entryNames(ctx)).not.toContain(NATIVE_SURFACE)
++    const picker = ctx.get('directoryPicker') as DirectoryPicker
++    expect(picker.capability().kind).toBe('browse')
++  })
++
++  it('reports a rejected backend config instead of mounting the adaptive choice', { timeout: 60_000 }, async () => {
++    // The value is a validated Config field, so a typo must be reported at load
++    // rather than silently falling back to the adaptive resolution. The Loader
++    // records the validation failure on the entry's fiber and leaves the row
++    // unmounted, which is what the booted tree must show.
++    stubAttendedHost()
++    const { ctx } = await loadComposition('127.0.0.1', { backend: 'nativ' })
++
++    const chooser = [...ctx.loader.entries()].find(entry => entry.options.name === AUTO)!
++    await expect(chooser.fiber!.await()).rejects.toThrow(/expected "native" \| "browse"/)
++    expect(entryNames(ctx)).not.toContain(BROWSE)
++    expect(entryNames(ctx)).not.toContain(NATIVE)
++    expect(ctx.get('directoryPicker')).toBeUndefined()
++  })
++
+   it('unmounts the backend when the surface entry fails to load', { timeout: 60_000 }, async () => {
+     stubAttendedHost()
+     const { ctx } = await loadComposition('127.0.0.1', { failSurface: true })
+diff --git a/packages/host/directory-picker-auto/tests/resolve.spec.ts b/packages/host/directory-picker-auto/tests/resolve.spec.ts
+index 422d6f3d01..5327e66e1e 100644
+--- a/packages/host/directory-picker-auto/tests/resolve.spec.ts
++++ b/packages/host/directory-picker-auto/tests/resolve.spec.ts
+@@ -2,6 +2,7 @@ import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { delimiter, join } from 'node:path'
+ import { afterEach, describe, expect, it } from 'vitest'
++import { Config } from '../src/index.ts'
+ import { canExecute, hasLinuxChooserBinary } from '../src/probe.ts'
+ import { resolveDirectoryPickerBackend } from '../src/resolve.ts'
+ import type { DirectoryPickerHostFacts } from '../src/resolve.ts'
+@@ -17,6 +18,18 @@ const attended: DirectoryPickerHostFacts = {
+ }
+ 
+ describe('resolveDirectoryPickerBackend', () => {
++  it('validates configured backends', () => {
++    expect(Config({})).toEqual({})
++    expect(Config({ backend: 'browse' }).backend).toBe('browse')
++    expect(() => Config({ backend: 'invalid' } as never)).toThrow()
++  })
++
++  it('honors explicit backend selection over host facts', () => {
++    expect(resolveDirectoryPickerBackend(attended, 'browse')).toBe('browse')
++    expect(resolveDirectoryPickerBackend({ ...attended, ssh: true }, 'native')).toBe('native')
++    expect(resolveDirectoryPickerBackend(attended, undefined)).toBe('native')
++  })
++
+   it('resolves native for a loopback bind on a display platform', () => {
+     expect(resolveDirectoryPickerBackend(attended)).toBe('native')
+     expect(resolveDirectoryPickerBackend({ ...attended, platform: 'win32' })).toBe('native')

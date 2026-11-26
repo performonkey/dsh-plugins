@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dwr",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CLUSTER_MASTER_DO",
+        "class_name": "ClusterMasterDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ClusterMasterDO"]
+    }
+  ],
+  "vars": {
+    "AUTH_TOKEN": "replace-with-your-auth-token",
+    "BASIC_AUTH_USER": "admin",
+    "BASIC_AUTH_PASS": "replace-with-your-secure-password"
+  },
+  "assets": {
+    "directory": "../../../apps/web/dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  }
+}

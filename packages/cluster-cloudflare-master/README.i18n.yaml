@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/experimental/cluster-cloudflare-master/README.md
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects:
+  en: fa494436a22fd6f8
+  zh: bb770a1371f65bb0
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/highlights:
+  en: 5461d03ccb919bd8
+  zh: 8e8769bf1a0020da
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/architecture:
+  en: 5e04258eeb45a6a7
+  zh: 46708edaa1ab979c
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/configuration:
+  en: 979f80a3d05e6942
+  zh: be9cb1c6a1aae74b
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/deployment:
+  en: a147233b0bc665fa
+  zh: ed56275e15521909
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/deployment/1-prerequisites:
+  en: acc7c2a7c36b44e3
+  zh: 349a234f9c32234a
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/deployment/2-local-development-testing:
+  en: 8df95c426d81bd27
+  zh: fcb4b774e74124a8
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/deployment/3-deploy-to-cloudflare:
+  en: 85f28cdfd6b4b749
+  zh: 31b19a7a22d584b9
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/connecting-your-worker-node:
+  en: 2ba7f9f50be27ce0
+  zh: 930ccd90e652a9b0
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/request-lifecycle:
+  en: 34998364ab08bad3
+  zh: 87882696d9dd70e6
+/deepseek-harness-cluster-master-cloudflare-workers-durable-objects/license:
+  en: aad9b93c8b488fac
+  zh: 78515e7f72c02193

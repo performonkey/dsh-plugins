@@ -1,0 +1,24 @@
+{
+  "name": "@deepseek-ai/dsh-client-ui-terminal-mobile-keyboard",
+  "description": "On-screen quick navigation and modifier key bar for mobile terminal interactions in DeepSeek Harness",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "src/mobile-keyboard.tsx",
+  "types": "src/mobile-keyboard.tsx",
+  "exports": {
+    ".": "./src/mobile-keyboard.tsx",
+    "./keys": "./src/mobile-keyboard-keys.ts",
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "engines": {
+    "dsh": ">=0.2.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "@deepseek-ai/dsh-client-ui-primitives": "*"
+  }
+}

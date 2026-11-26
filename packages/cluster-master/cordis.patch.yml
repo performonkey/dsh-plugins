@@ -1,0 +1,26 @@
+# Cluster Master overlay patch.
+# Applied on top of dsh-web-app: converts Master into a pure control-plane & Web GUI host.
+# All local code execution, local tools, agent-loop, and local gateway are disabled.
+# Web requests (/api and /api/remote.mux) are relayed via reverse WebSocket tunnel to Worker.
+
+- id: agent-loop
+  disabled: true
+
+- id: agent
+  disabled: true
+
+- id: session
+  disabled: true
+
+- id: session-log-deepseek
+  disabled: true
+
+- insert:
+    - id: cluster-master
+      name: '@deepseek-ai/dsh-cluster-master'
+      config:
+        authToken: !!js process.env.DSH_CLUSTER_AUTH_TOKEN ?? 'default-cluster-token'
+        workerConnectPath: !!js process.env.DSH_CLUSTER_TUNNEL_PATH ?? '/api/worker/connect'
+        heartbeatIntervalMs: !!js Number(process.env.DSH_CLUSTER_HEARTBEAT_MS ?? 15000)
+        maxMissedPongs: !!js Number(process.env.DSH_CLUSTER_MAX_MISSED_PONGS ?? 2)
+        disableTokenAuth: !!js process.env.DSH_DISABLE_TOKEN_AUTH === 'true' || process.env.DSH_DISABLE_TOKEN_AUTH === '1'

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Antigravity CLI サブエージェント",
+    "description": "Antigravity CLI (agy) のネイティブ設定を使用して、単独のタスクを委派します。"
+  }
+}

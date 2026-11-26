@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Antigravity CLI subagente",
+    "description": "Delegue uma tarefa a Antigravity CLI (agy) usando suas configurações nativas."
+  }
+}

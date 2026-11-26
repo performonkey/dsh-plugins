@@ -1,0 +1,36 @@
+{
+  "name": "@deepseek-ai/dsh-cluster-protocol",
+  "description": "Cluster wire frame codecs and message definitions for Master-Worker communication",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "engines": {
+    "dsh": ">=0.2.0"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-brand": "*",
+    "@deepseek-ai/dsh-util-values": "*"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "*"
+  }
+}

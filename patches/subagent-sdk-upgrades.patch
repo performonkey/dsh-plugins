@@ -1,0 +1,139 @@
+diff --git a/packages/subagent/subagent-claude-code/README.i18n.yaml b/packages/subagent/subagent-claude-code/README.i18n.yaml
+index 9ae58516c8..e16daff8a0 100644
+--- a/packages/subagent/subagent-claude-code/README.i18n.yaml
++++ b/packages/subagent/subagent-claude-code/README.i18n.yaml
+@@ -78,5 +78,5 @@
+   en: 421cfbcfb55c7e2b
+   zh: df54ab7743cf6e33
+ /deepseek-ai-dsh-subagent-claude-code/known-limitations-and-deferred-work/dev-note:
+-  en: 185beb4ff55f0946
+-  zh: 068ca7c57137eb33
++  en: 998da99ce2f5197b
++  zh: 73873277cca8b8a4
+diff --git a/packages/subagent/subagent-claude-code/README.md b/packages/subagent/subagent-claude-code/README.md
+index 43ec7ba399..ae0996a971 100644
+--- a/packages/subagent/subagent-claude-code/README.md
++++ b/packages/subagent/subagent-claude-code/README.md
+@@ -185,6 +185,6 @@ These limits define when this provider is a poor fit or needs special operationa
+ This Dev Note is working context for maintainers: open questions and undecided directions. It is explicitly non-authoritative — shipped behavior and limits live in the sections above and in the package code.
+ 
+ - **Payload size disclosure** — the current darwin-arm64 platform payload packs to about 92 MB and unpacks to about 325 MB; these are disclosure numbers, not installation thresholds.
+-- **Version-pinned protocol** — the runtime dependency is pinned to Agent SDK 0.3.263; upgrading pins a new SDK version and requires re-running the keyless real-product and loader-composition evidence.
++- **Version-pinned protocol** — the runtime dependency is pinned to Agent SDK 0.3.316; upgrading pins a new SDK version and requires re-running the keyless real-product and loader-composition evidence.
+ 
+ </details>
+diff --git a/packages/subagent/subagent-claude-code/README.zh.md b/packages/subagent/subagent-claude-code/README.zh.md
+index 059d9fdf46..662bea2056 100644
+--- a/packages/subagent/subagent-claude-code/README.zh.md
++++ b/packages/subagent/subagent-claude-code/README.zh.md
+@@ -185,6 +185,6 @@ Claude Code 子级会在一个全新的 SDK query 中接收独立文本任务。
+ 本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为与限制以上文和包代码为准。
+ 
+ - **载荷体积披露**——当前 darwin-arm64 平台载荷压缩后约 92 MB、解包后约 325 MB；这些是披露数字，不是安装阈值。
+-- **版本锁定的协议**——运行时依赖锁定为 Agent SDK 0.3.263；升级会锁定新的 SDK 版本，并需要重新运行无密钥真实产品与 loader 组合证据。
++- **版本锁定的协议**——运行时依赖锁定为 Agent SDK 0.3.316；升级会锁定新的 SDK 版本，并需要重新运行无密钥真实产品与 loader 组合证据。
+ 
+ </details>
+diff --git a/packages/subagent/subagent-claude-code/package.json b/packages/subagent/subagent-claude-code/package.json
+index 490c6a1b09..bf0889cd5a 100644
+--- a/packages/subagent/subagent-claude-code/package.json
++++ b/packages/subagent/subagent-claude-code/package.json
+@@ -48,7 +48,7 @@
+     "@deepseek-ai/dsh-timeout": "workspace:*"
+   },
+   "dependencies": {
+-    "@anthropic-ai/claude-agent-sdk": "0.3.263",
++    "@anthropic-ai/claude-agent-sdk": "0.3.316",
+     "@anthropic-ai/sdk": "0.93.0",
+     "@deepseek-ai/dsh-brand": "workspace:*",
+     "@deepseek-ai/schemastery": "workspace:~",
+diff --git a/packages/subagent/subagent-claude-code/tests/real-deepseek.e2e.ts b/packages/subagent/subagent-claude-code/tests/real-deepseek.e2e.ts
+index a132f25bc4..679e6c7a53 100644
+--- a/packages/subagent/subagent-claude-code/tests/real-deepseek.e2e.ts
++++ b/packages/subagent/subagent-claude-code/tests/real-deepseek.e2e.ts
+@@ -122,13 +122,13 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
+       })
+       await ctx.plugin(claudeCode, { env, disposeGraceMs: 3_000 })
+ 
+-      expect(sdkPackage.version).toBe('0.3.263')
+-      expect(sdkPackage.claudeCodeVersion).toBe('2.1.263')
+-      expect(sdkPackage.optionalDependencies[platformPackage]).toBe('0.3.263')
++      expect(sdkPackage.version).toBe('0.3.316')
++      expect(sdkPackage.claudeCodeVersion).toBe('2.1.316')
++      expect(sdkPackage.optionalDependencies[platformPackage]).toBe('0.3.316')
+       const version = await execFileAsync(claudeBin, ['--version'], {
+         env: { ...process.env, ...env },
+       })
+-      expect(version.stdout.trim()).toBe('2.1.263 (Claude Code)')
++      expect(version.stdout.trim()).toBe('2.1.316 (Claude Code)')
+ 
+       const nonce = `DSH_CLAUDE_DEEPSEEK_${randomUUID()}`
+       const parent = await harness.create(brandString<SessionId>('deepseek-e2e-parent'), {}, { cwd: workspace })
+diff --git a/packages/subagent/subagent-claude-code/tests/real-product.spec.ts b/packages/subagent/subagent-claude-code/tests/real-product.spec.ts
+index 00a31ccd10..cd97ba715d 100644
+--- a/packages/subagent/subagent-claude-code/tests/real-product.spec.ts
++++ b/packages/subagent/subagent-claude-code/tests/real-product.spec.ts
+@@ -289,7 +289,7 @@ function startRequest(
+   })
+ }
+ 
+-describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263 fixture', {
++describe('real Claude Agent SDK 0.3.316 and its distributed Claude Code 2.1.316 fixture', {
+   timeout: 60_000,
+ }, () => {
+   it('inherits host settings and sends the exact task and fake key to local Messages', async () => {
+@@ -299,13 +299,13 @@ describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263
+       kind: 'complete',
+       text: sentinel,
+     })
+-    expect(sdkPackage.version).toBe('0.3.263')
+-    expect(sdkPackage.claudeCodeVersion).toBe('2.1.263')
+-    expect(sdkPackage.optionalDependencies[platformPackage]).toBe('0.3.263')
++    expect(sdkPackage.version).toBe('0.3.316')
++    expect(sdkPackage.claudeCodeVersion).toBe('2.1.316')
++    expect(sdkPackage.optionalDependencies[platformPackage]).toBe('0.3.316')
+     const version = await execFileAsync(claudeBin, ['--version'], {
+       env: { ...process.env, ...harness.env },
+     })
+-    expect(version.stdout.trim()).toBe('2.1.263 (Claude Code)')
++    expect(version.stdout.trim()).toBe('2.1.316 (Claude Code)')
+ 
+     const run = await startRequest(harness, task)
+     await expect(run.result).resolves.toEqual({
+@@ -318,7 +318,7 @@ describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263
+       (message): message is SDKSystemMessage =>
+         message.type === 'system' && message.subtype === 'init',
+     )
+-    expect(initMessage?.claude_code_version).toBe('2.1.263')
++    expect(initMessage?.claude_code_version).toBe('2.1.316')
+     const spawnedExecutable = harness.spawnSpecs[0]?.argv[0]
+     expect(spawnedExecutable).toBeDefined()
+     expect(process.platform === 'win32'
+diff --git a/packages/subagent/subagent-claude-code/tests/subagent-claude-code.spec.ts b/packages/subagent/subagent-claude-code/tests/subagent-claude-code.spec.ts
+index 8e7d384d9b..7adf449bd4 100644
+--- a/packages/subagent/subagent-claude-code/tests/subagent-claude-code.spec.ts
++++ b/packages/subagent/subagent-claude-code/tests/subagent-claude-code.spec.ts
+@@ -61,8 +61,8 @@ type QueryFactory = (params: {
+ 
+ const queryMock = vi.hoisted(() => vi.fn<QueryFactory>())
+ 
+-const CLAUDE_AGENT_SDK_VERSION = '0.3.263'
+-const CLAUDE_CODE_VERSION = '2.1.263'
++const CLAUDE_AGENT_SDK_VERSION = '0.3.316'
++const CLAUDE_CODE_VERSION = '2.1.316'
+ const CLAUDE_PLATFORM_PACKAGES = [
+   '@anthropic-ai/claude-agent-sdk-darwin-arm64',
+   '@anthropic-ai/claude-agent-sdk-darwin-x64',
+diff --git a/packages/subagent/subagent-codex/package.json b/packages/subagent/subagent-codex/package.json
+index ece34f1f3b..3171103e87 100644
+--- a/packages/subagent/subagent-codex/package.json
++++ b/packages/subagent/subagent-codex/package.json
+@@ -51,7 +51,7 @@
+     "@deepseek-ai/dsh-brand": "workspace:*",
+     "@deepseek-ai/dsh-sdk-protocol": "workspace:*",
+     "@deepseek-ai/schemastery": "workspace:~",
+-    "@openai/codex": "0.153.4",
++    "@openai/codex": "0.166.0",
+     "@deepseek-ai/dsh-tool-subagent": "workspace:*"
+   },
+   "devDependencies": {
