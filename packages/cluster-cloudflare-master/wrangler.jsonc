@@ -22,9 +22,7 @@
     }
   ],
   "vars": {
-    "AUTH_TOKEN": "replace-with-your-auth-token",
-    "BASIC_AUTH_USER": "admin",
-    "BASIC_AUTH_PASS": "replace-with-your-secure-password"
+    "BASIC_AUTH_USER": "admin"
   },
   "assets": {
     "directory": "./web-dist",
