@@ -64,6 +64,7 @@ export interface HttpRespFrame {
   readonly reqId: TunnelRequestId
   readonly status: number
   readonly headers?: Readonly<Record<string, string>> | undefined
+  readonly cookies?: readonly string[] | undefined
   readonly body?: string | undefined
 }
 

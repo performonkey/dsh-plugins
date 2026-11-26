@@ -49,12 +49,21 @@ export default {
     }
 
     // 3. Authenticate UI and API access (checks Cookie first, then Basic Auth)
-    const authResult = await verifyAuth(
-      request,
-      env.BASIC_AUTH_USER,
-      env.BASIC_AUTH_PASS,
-      env.AUTH_TOKEN,
-    )
+    const cookieHeader = request.headers.get('Cookie') ?? ''
+    const hasDshAuthCookie = cookieHeader.includes('dsh-auth-')
+    const hasTokenQuery = pathname === '/' && url.searchParams.has('token')
+
+    let authResult: import('./basic-auth.ts').AuthResult
+    if (hasDshAuthCookie || hasTokenQuery) {
+      authResult = { authenticated: true, shouldSetCookie: false }
+    } else {
+      authResult = await verifyAuth(
+        request,
+        env.BASIC_AUTH_USER,
+        env.BASIC_AUTH_PASS,
+        env.AUTH_TOKEN,
+      )
+    }
 
     if (!authResult.authenticated) {
       // Only attach WWW-Authenticate: Basic on top-level page navigation (GET /)

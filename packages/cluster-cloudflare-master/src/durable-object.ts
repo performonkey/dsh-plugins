@@ -493,7 +493,20 @@ export class ClusterMasterDO {
       const respHeaders = new Headers()
       if (resp.headers) {
         for (const [k, v] of Object.entries(resp.headers)) {
-          if (v !== undefined) respHeaders.set(k, v)
+          if (v !== undefined) {
+            if (k.toLowerCase() === 'set-cookie' && resp.cookies && resp.cookies.length > 0) {
+              continue
+            }
+            respHeaders.set(k, v)
+          }
+        }
+      }
+      if (resp.cookies && Array.isArray(resp.cookies)) {
+        for (let cookie of resp.cookies) {
+          if (!cookie.toLowerCase().includes('secure')) {
+            cookie += '; Secure'
+          }
+          respHeaders.append('set-cookie', cookie)
         }
       }
 

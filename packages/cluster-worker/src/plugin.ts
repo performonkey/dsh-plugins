@@ -189,6 +189,7 @@ export class ClusterWorkerService extends Service {
           const resp = await fetch(localUrl, {
             method: req.method,
             headers,
+            redirect: 'manual',
             signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]),
             ...(hasBody && req.body !== undefined ? { body: req.body } : {}),
           })
@@ -197,9 +198,13 @@ export class ClusterWorkerService extends Service {
           resp.headers.forEach((v, k) => {
             respHeaders[k] = v
           })
+          const cookies = typeof (resp.headers as any).getSetCookie === 'function'
+            ? (resp.headers as any).getSetCookie()
+            : undefined
           return {
             status: resp.status,
             headers: respHeaders,
+            cookies: cookies && cookies.length > 0 ? cookies : undefined,
             body,
           }
         } catch (fetchErr) {

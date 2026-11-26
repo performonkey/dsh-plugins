@@ -86,7 +86,7 @@ export async function verifyAuth(
   expectedPass?: string,
   salt = '',
 ): Promise<AuthResult> {
-  if (!expectedUser && !expectedPass) {
+  if (!expectedPass) {
     return { authenticated: true, shouldSetCookie: false }
   }
 

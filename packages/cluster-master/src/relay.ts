@@ -77,6 +77,9 @@ export class MasterRelay {
       }, undefined, controller.signal)
 
       if (controller.signal.aborted) return
+      if (resp.cookies && resp.cookies.length > 0) {
+        res.setHeader('set-cookie', resp.cookies as string[])
+      }
       res.writeHead(resp.status, resp.headers)
       res.end(resp.body)
     } catch (err) {
