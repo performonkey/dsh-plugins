@@ -244,9 +244,56 @@ export class ClusterWorkerService extends Service {
       }
     })
 
+    let lastPrintedBannerToken: string | undefined
+    const printAccessBanner = (token?: string) => {
+      const resolvedToken = token ?? extractToken(ctx)
+      if (resolvedToken && resolvedToken === lastPrintedBannerToken) return
+      if (resolvedToken) lastPrintedBannerToken = resolvedToken
+
+      let masterOrigin = config.masterUrl
+      try {
+        const httpUrl = config.masterUrl.startsWith('wss:')
+          ? config.masterUrl.replace(/^wss:/, 'https:')
+          : config.masterUrl.replace(/^ws:/, 'http:')
+        masterOrigin = new URL(httpUrl).origin
+      } catch {}
+
+      console.log('')
+      console.log('='.repeat(72))
+      console.log(`[cluster-worker] Connected to Master : ${config.masterUrl}`)
+      if (resolvedToken) {
+        console.log(`[cluster-worker] Web Access URL    : ${masterOrigin}/?token=${resolvedToken}`)
+        console.log(`[cluster-worker] Login Token       : ${resolvedToken}`)
+      } else {
+        console.log(`[cluster-worker] Web Master URL    : ${masterOrigin}`)
+      }
+      console.log('='.repeat(72))
+      console.log('')
+    }
+
     // Start outbound connection
     this.client.on('connected', () => {
-      console.log(`[cluster-worker] connected to master: ${config.masterUrl}`)
+      lastPrintedBannerToken = undefined
+      const token = extractToken(ctx)
+      if (token) {
+        printAccessBanner(token)
+      } else {
+        setTimeout(() => printAccessBanner(), 500)
+        setTimeout(() => printAccessBanner(), 2000)
+      }
+    })
+    ctx.on('webserver/entry-url', (_baseUrl, entries) => {
+      queueMicrotask(() => {
+        for (const entry of entries) {
+          try {
+            const token = new URL(entry.url).searchParams.get('token')
+            if (token) {
+              printAccessBanner(token)
+              break
+            }
+          } catch {}
+        }
+      })
     })
     this.client.on('disconnected', (detail?: { code?: number; reason?: string }) => {
       const extra = detail?.code ? ` (code: ${detail.code}${detail.reason ? `, reason: ${detail.reason}` : ''})` : ''
@@ -285,6 +332,23 @@ export class ClusterWorkerService extends Service {
     this.dispatcher.close()
     await this.client.stop()
   }
+}
+
+function extractToken(ctx: Context): string | undefined {
+  const entries: { label: string; url: string; open?: boolean }[] = []
+  try {
+    const webServer = ctx.get('webServer') as any
+    if (webServer) {
+      ctx.emit(webServer, 'webserver/entry-url', 'http://127.0.0.1:3080/', entries)
+    } else {
+      ctx.emit('webserver/entry-url', 'http://127.0.0.1:3080/', entries)
+    }
+    for (const entry of entries) {
+      const token = new URL(entry.url).searchParams.get('token')
+      if (token) return token
+    }
+  } catch {}
+  return undefined
 }
 
 export default ClusterWorkerService
