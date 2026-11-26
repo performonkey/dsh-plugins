@@ -4,6 +4,9 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat"],
+  "alias": {
+    "@deepseek-ai/dsh-cluster-protocol": "../cluster-protocol/lib/index.js"
+  },
   "durable_objects": {
     "bindings": [
       {
@@ -24,7 +27,7 @@
     "BASIC_AUTH_PASS": "replace-with-your-secure-password"
   },
   "assets": {
-    "directory": "../../../apps/web/dist",
+    "directory": "./web-dist",
     "binding": "ASSETS",
     "run_worker_first": true
   }
